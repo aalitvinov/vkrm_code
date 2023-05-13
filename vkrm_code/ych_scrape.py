@@ -28,7 +28,7 @@ YCHART_PASSWORD = str(os.environ.get("YCHART_PASSWORD"))
 
 
 with open("./data/yf/new_tickers_2146.json") as fj:
-    ticker_list = load(fj)
+    ticker_list: list[str] = load(fj)
 # ticker_list = ["NVR", "NOK"]
 
 
