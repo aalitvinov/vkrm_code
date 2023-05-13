@@ -1,6 +1,5 @@
 from json import load
 from time import sleep
-import pandas as pd
 from tqdm import tqdm
 import os
 from dotenv import load_dotenv
