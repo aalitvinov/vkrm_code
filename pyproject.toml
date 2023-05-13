@@ -24,6 +24,7 @@ python-dotenv = "^1.0.0"
 yahooquery = "^2.3.1"
 polars = "^0.17.13"
 pyarrow = "^12.0.0"
+tenacity = "^8.2.2"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.23.0"
@@ -32,7 +33,7 @@ ipykernel = "^6.23.0"
 line-length = 100
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 target-version = "py311"
 
 [build-system]
