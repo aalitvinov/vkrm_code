@@ -60,6 +60,10 @@ def _convert_value(value: str | float) -> np.float64:
             return np.float64(value[:-1]) * 1_000_000
         case str() if value.endswith("K"): # thousand
             return np.float64(value[:-1]) * 1_000
+        case str() if value.endswith("K%"): # thousand %s
+            return np.float64(value[:-2]) * 1_000
+        case str() if value.endswith("%"): # %s
+            return np.float64(value[:-1])
         case _:
             return np.float64(value)
 
@@ -79,7 +83,8 @@ def parse_html_to_pd(page_text: str, ych_var_type: YchartsDataVar) -> pd.DataFra
     if df is not None:
         match ych_var_type:
             case YchartsDataVar.OPERATING_MARGIN:
-                df["value"] = df["value"].str.strip("%").astype(np.float64)
+                df["value"] = df["value"].apply(_convert_value)  # type: ignore
+                # df["value"] = df["value"].str.strip("%").astype(np.float64)
                 # sort the DataFrame by the "date" column
                 df = df.sort_values(by="date")
                 # group the DataFrame by "date" column, using a dynamic

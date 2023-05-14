@@ -11,7 +11,7 @@ from ycharts_parsers import parse_html_to_pd, YchartsDataVar
 
 TEST_TICKER = "NOK"
 HEADLESS = True
-YCH_DATA_TYPE = YchartsDataVar.TOTAL_ASSETS
+YCH_DATA_TYPE = YchartsDataVar.OPERATING_MARGIN
 
 PLAYWRIGHT_CACHE = "./data/.playwright_cache"
 if not os.path.exists(PLAYWRIGHT_CACHE):
