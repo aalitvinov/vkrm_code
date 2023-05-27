@@ -1,1 +1,1 @@
-from ycharts_parsers.parsers import parse_html_to_pd, YchartsDataVar
+from .parsers import parse_html_to_pd, YchartsDataVar  # noqa: F401

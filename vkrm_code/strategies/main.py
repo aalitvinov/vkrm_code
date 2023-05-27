@@ -26,6 +26,9 @@ class Universe:
     yoy_returns: pd.DataFrame
     volumes: pd.DataFrame
     sectors_info: pd.DataFrame
+    
+    def __post_init__(self):
+        self.symbols = self.factors_df.columns.to_list()
 
     def verify_candidates(self, candidates: list[str], year: pd.Timestamp) -> list[str]:
         """
@@ -35,9 +38,12 @@ class Universe:
         candidates_with_nas = set()
         for field in fields(self):
             if field.name != "sectors_info":
-                data_df_for_candidates = getattr(self, field.name).loc[:, candidates]
-                count_nas = data_df_for_candidates.isna().sum()
+                # data_df_for_candidates = getattr(self, field.name).loc[:, candidates]
+                data_df_for_candidates: pd.DataFrame = getattr(self, field.name).loc[year, candidates]
+                # print(f"{data_df_for_candidates=}\n{type(data_df_for_candidates)=}")
+                count_nas = data_df_for_candidates.isna()#.sum()
                 # print(field.name, count_nas.loc[count_nas > 0].index.to_list())
+                # print(f"{count_nas=}\n{type(count_nas)=}")
                 candidates_with_nas.update(count_nas.loc[count_nas > 0].index.to_list())
             else:
                 continue
@@ -53,7 +59,7 @@ class Portfolio:
     ptype: PortfolioType
 
     def __post_init__(self):
-        """Initialize the symbols and info attributes with None."""
+        """Initialize the symbols (tickers) and info attributes with None."""
         self.symbols: list[str] | None = None
         self.info: pd.DataFrame | None = None
         self.mean_return: float | None = None
@@ -91,6 +97,7 @@ class Portfolio:
         ]
         self.mean_return = self.info.loc[:, "r_ii"].mean()
 
+
 class Strategy:
     """Class representing a strategy for constructing portfolios using a given universe."""
 
@@ -102,8 +109,7 @@ class Strategy:
         """
         Remove the specified elements from the given list and return the updated list.
         """
-        list_ = [e for e in list_ if e not in args]
-        return list_
+        return [e for e in list_ if e not in args]
 
     def construct_portfolios(
         self,
@@ -120,7 +126,10 @@ class Strategy:
             ranking: list[str] = (
                 universe.factors_df.loc[year].sort_values(ascending=False).dropna()
             ).index.to_list()
-            while (found := False) is not True and (counter := 100) > 0:
+
+            retry_times = 100 # Retry to compose portfolio this many times
+            found = False
+            while found is not True and retry_times > 0:
                 lohts, holts = ranking[:plength], ranking[-plength:]
                 lohts_misses = universe.verify_candidates(lohts, year + hold)
                 holts_misses = universe.verify_candidates(holts, year + hold)
@@ -129,13 +138,16 @@ class Strategy:
                 ranking = type(self).multi_delete(ranking, lohts_misses)
                 ranking = type(self).multi_delete(ranking, holts_misses)
                 # print(len(ranking), len(lohts_misses), len(holts_misses))
-                if (len(lohts_misses) + len(holts_misses)) == 0:
+                if all([not lohts_misses, not holts_misses]):  # check if both lists are empty
                     found = True  # noqa: F841
                     break
-                counter -= 1
+                retry_times -= 1
+
             loht_portfolio = Portfolio(create_date=year, hold=hold, ptype=PortfolioType.LOHT)
             loht_portfolio.fit(candidates=lohts, universe=universe)
+
             holt_portfolio = Portfolio(create_date=year, hold=hold, ptype=PortfolioType.HOLT)
             holt_portfolio.fit(candidates=holts, universe=universe)
+
             year_str = year.strftime("%Y-%m-%d")
             self.portfolios[year_str] = (loht_portfolio, holt_portfolio)  # type: ignore

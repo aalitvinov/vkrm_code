@@ -1,1 +1,2 @@
-from strategies.main import PortfolioType, Universe, Portfolio, Strategy  # noqa: F401
+from .main import PortfolioType, Universe, Portfolio, Strategy  # noqa: F401
+
