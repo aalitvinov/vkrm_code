@@ -57,14 +57,22 @@ def universe(
 
 class TestUniverse:
     def test_verify_candidates(self, universe: Universe):
-        assert (
-            universe.verify_candidates(TESTY_TICKERS, pd.Timestamp(year=2014, month=4, day=1))[0]
-            == "SCX"
-        )
+        res = set()
+        for i in range(2011, 2024):
+            res.update(
+                universe.verify_candidates(TESTY_TICKERS, pd.Timestamp(year=i, month=4, day=1))
+            )
+        assert res == {"KBAL", "LPL", "PDCE", "SCX"}
 
 
 class TestPortfolio:
-    ...
+    def test_fit(self):
+        pass
+
 
 class TestStrategy:
-    ...
+    def test_multi_delete(self):
+        pass
+
+    def construct_portfolios(self):
+        pass

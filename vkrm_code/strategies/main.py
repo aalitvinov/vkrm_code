@@ -25,7 +25,7 @@ class Universe:
     asset_turnover: pd.DataFrame
     yoy_returns: pd.DataFrame
     volumes: pd.DataFrame
-    sectors_info: pd.DataFrame
+    # sectors_info: pd.Series
     
     def __post_init__(self):
         self.symbols = self.factors_df.columns.to_list()
@@ -37,17 +37,17 @@ class Universe:
         """
         candidates_with_nas = set()
         for field in fields(self):
-            if field.name != "sectors_info":
-                # data_df_for_candidates = getattr(self, field.name).loc[:, candidates]
-                data_df_for_candidates: pd.DataFrame = getattr(self, field.name).loc[year, candidates]
-                # print(f"{data_df_for_candidates=}\n{type(data_df_for_candidates)=}")
-                count_nas = data_df_for_candidates.isna()#.sum()
-                # print(field.name, count_nas.loc[count_nas > 0].index.to_list())
-                # print(f"{count_nas=}\n{type(count_nas)=}")
-                candidates_with_nas.update(count_nas.loc[count_nas > 0].index.to_list())
-            else:
-                continue
+            # if field.name != "sectors_info":
+            data_df_for_candidates: pd.DataFrame = getattr(self, field.name).loc[year, candidates]
+            count_nas = data_df_for_candidates.isna()
+            candidates_with_nas.update(count_nas.loc[count_nas > 0].index.to_list())
+            # else:
+            #     continue
         return sorted(candidates_with_nas)
+    
+    def prune_companies(self) -> None:
+        for field in fields(self):
+            setattr(self, field.name, getattr(self, field.name).loc[:, self.symbols])
 
 
 @dataclass
@@ -64,7 +64,7 @@ class Portfolio:
         self.info: pd.DataFrame | None = None
         self.mean_return: float | None = None
 
-    def fit(self, candidates: list[str], universe: Universe):
+    def fit(self, candidates: list[str], universe: Universe) -> None:
         """
         Fit the portfolio using the given candidates and the universe data.
         Update the symbols and info attributes with the appropriate data.
@@ -104,8 +104,8 @@ class Strategy:
     def __init__(self):
         self.portfolios: dict[str, tuple[Portfolio, Portfolio]] = dict()
 
-    @classmethod
-    def multi_delete(cls, list_: list[Any], args) -> list[Any]:
+    @staticmethod
+    def multi_delete(list_: list[Any], args) -> list[Any]:
         """
         Remove the specified elements from the given list and return the updated list.
         """
@@ -116,7 +116,7 @@ class Strategy:
         universe: Universe,
         hold: pd.DateOffset,
         plength: int = 6,
-    ):
+    ) -> None:
         """
         Construct portfolios for each year in the given `universe` using
         the specified holding period `hold` and portfolio length `plength`.
@@ -135,11 +135,11 @@ class Strategy:
                 holts_misses = universe.verify_candidates(holts, year + hold)
                 # print(f"{lohts_misses=}")
                 # print(f"{holts_misses=}")
-                ranking = type(self).multi_delete(ranking, lohts_misses)
-                ranking = type(self).multi_delete(ranking, holts_misses)
+                ranking = self.multi_delete(ranking, lohts_misses)
+                ranking = self.multi_delete(ranking, holts_misses)
                 # print(len(ranking), len(lohts_misses), len(holts_misses))
                 if all([not lohts_misses, not holts_misses]):  # check if both lists are empty
-                    found = True  # noqa: F841
+                    found = True
                     break
                 retry_times -= 1
 

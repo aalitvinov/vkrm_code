@@ -3,5 +3,5 @@
 __pycache__/
 *.pyc
 .playwright_cache
-.vscode
+# .vscode
 .pytest_cache
