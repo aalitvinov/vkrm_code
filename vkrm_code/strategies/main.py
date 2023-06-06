@@ -121,7 +121,7 @@ class Strategy:
         Construct portfolios for each year in the given `universe` using
         the specified holding period `hold` and portfolio length `plength`.
         """
-        for year in tqdm(universe.factors_df.index[:-1]):
+        for year in universe.factors_df.index[:-1]:
             lohts, holts = [], []
             ranking: list[str] = (
                 universe.factors_df.loc[year].sort_values(ascending=False).dropna()

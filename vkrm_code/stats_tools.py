@@ -35,7 +35,8 @@ def bootstrap_test(df: pd.DataFrame, alpha=0.05):
     )
 
     # Print the test result
-    print(test_result)
+    # print(test_result)
+    return test_result.confidence_interval
 
 
 def freq_domain_test(df: pd.DataFrame, alpha=0.05) -> tuple[float, NDArray[np.float64]]:
@@ -138,7 +139,7 @@ def wilcoxon_rs_test(df: pd.DataFrame) -> tuple[float, float]:
     drawn from the same distribution. The alternative hypothesis is
     that one of the distributions is stochastically greater than the other.
 
-    Return test p-value. If p-value < 0.5 then we can conclude that
+    Return (test statistic, test p-value). If p-value < 0.05 then we can conclude that
     there is evidence that LOHT portfolio has higher returns than
     HOLT portfolio. Otherwise we can't conclude that.
     """
